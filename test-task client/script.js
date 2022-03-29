@@ -1,10 +1,7 @@
-let currentBank
-let currentClient
-let jbank
-
 async function init(){
     main.innerHTML = ""
-    //Список Банков
+    //Список банков
+    let jbank
     jbank = await getAllBanks()
     for(let key in jbank){
         main.innerHTML +=
@@ -32,7 +29,7 @@ async function init(){
         </div>
         `
     deleteBank()
-    //Новый Банк
+    //Новый банк
     let newBankButton = document.getElementById("new_bank_button")
     newBankButton.onclick = function(){
         main.innerHTML =
@@ -47,11 +44,11 @@ async function init(){
         toMainUI()
         newBankUI()
     }
-    //Список Клиентов
+    //Список клиентов
     let clientsButtons = document.querySelectorAll(".clients_button")
     clientsButtons.forEach(clientsButton => {
         clientsButton.onclick = async function(){
-            currentBank = clientsButton.value
+            let currentBank = clientsButton.value
             jclient = await getClientsByBank(currentBank)
             main.innerHTML =
             `
@@ -75,160 +72,162 @@ async function init(){
                 </div>
                 `
             }
-        toMainUI()
-        deleteClient()
-        let newOfferButtons = document.querySelectorAll(".new_offer_button")
-        newOfferButtons.forEach(newOfferButton => {
-            newOfferButton.onclick = async function(){
-                jcredit = await getCreditsByBank(currentBank)
-                currentClient = newOfferButton.value
-                main.innerHTML =
-                `
-                <button type="button" class="bank-form__button" id = "to_main">Назад</button>
-                `
-                for(key in jcredit){
-                    main.innerHTML +=
+            toMainUI()
+            deleteClient()
+            //Новый оффер клиента
+            let newOfferButtons = document.querySelectorAll(".new_offer_button")
+            newOfferButtons.forEach(newOfferButton => {
+                newOfferButton.onclick = async function(){
+                    jcredit = await getCreditsByBank(currentBank)
+                    let currentClient = newOfferButton.value
+                    main.innerHTML =
                     `
-                    <div>
-                        <h4> Лимит по кредиту: ${jcredit[key].limit}</h4>
-                        <h4> Процент: ${jcredit[key].percent}%</h4>
-                    </div>
-                    <button type="button" class="offer_button" value = "${key}">Создать Оффер</button>
+                    <button type="button" class="bank-form__button" id = "to_main">Назад</button>
                     `
-                }
-                toMainUI()
-                let offerButtons = document.querySelectorAll(".offer_button")
-                offerButtons.forEach(offerButton => {
-                    offerButton.onclick = function(){
-                        let curentCredit = jcredit[offerButton.value]
-                        main.innerHTML =
-                        `
-                        <button type="button" class="bank-form__button" id = "to_main">Назад</button>
-                        <form class="bank-form">
-                            <div class="bank-form__title">Кредитное предложение</div>
-                            <input class="bank-form__input" type="number" placeholder="Сумма Оффера" id="limit" max="${curentCredit.limit}">
-                            <input id="months" type="number" min="6" max="24" placeholder="Число месяцев">
-                            <div id="offer_data">
-                            <h4>Сумма оффера: -</h4>
-                            <h4>Дата закрытия: -</h4>
-                            <h4>Процент: ${curentCredit.percent}%</h4>
-                            <h4>Сумма выплат: -</h4>
-                            </div>
-                            <button type="submit" class="bank-form__button" id="sendOffer">Отправить</button>
-                        </form>
-                        `
-                        toMainUI()
-                        let limitInput = document.getElementById("limit")
-                        let monthInput = document.getElementById("months")
-                        let offerData = document.getElementById("offer_data")
-                        let now, months, summ
-                        limitInput.oninput = function(){
-                            now = new Date()
-                            months = monthInput.value
-                            if(months > 24){
-                                monthInput.value = 24
-                                months = monthInput.value
-                            }
-                            if(months < 6){
-                                monthInput.value = 6
-                                months = monthInput.value
-                            }
-                            if(limitInput.value > curentCredit.limit){
-                                limitInput.value = curentCredit.limit
-                            }
-                            if(months){
-                                now.setMonth(now.getMonth() + parseFloat(months))
-                            }else{
-                                now.setMonth(now.getMonth() + parseFloat(6))
-                            }
-                            let exp = -months
-                            summ = Math.round(months*(document.getElementById("limit").value*((curentCredit.percent/(100*12))/(1-Math.pow((1+(curentCredit.percent/(100*12))),exp)))))
-                            console.log(months)
-                            offerData.innerHTML = 
-                            `
-                            <h4>Сумма оффера: ${document.getElementById("limit").value}</h4>
-                            <h4>Дата закрытия: ${now.getDate()}.${now.getMonth()+1}.${now.getFullYear()}</h4>
-                            <h4>Процент: ${summ - document.getElementById("limit").value}</h4>
-                            <h4>Сумма выплат: ${summ}</h4>
-                            `
-                        }
-                        monthInput.oninput = function(){
-                            now = new Date()
-                            months = monthInput.value
-                            if(months > 24){
-                                monthInput.value = 24
-                                months = monthInput.value
-                            }
-                            if(months < 6){
-                                monthInput.value = 6
-                                months = monthInput.value
-                            }
-                            if(limitInput.value > curentCredit.limit){
-                                limitInput.value = curentCredit.limit
-                            }
-                            if(months){
-                                now.setMonth(now.getMonth() + parseFloat(months))
-                            }else{
-                                now.setMonth(now.getMonth() + parseFloat(6))
-                            }
-                            let exp = -months
-                            summ = Math.round(months*(document.getElementById("limit").value*((curentCredit.percent/(100*12))/(1-Math.pow((1+(curentCredit.percent/(100*12))),exp)))))
-                            console.log(months)
-                            offerData.innerHTML = 
-                            `
-                            <h4>Сумма оффера: ${document.getElementById("limit").value}</h4>
-                            <h4>Дата закрытия: ${now.getDate()}.${now.getMonth()+1}.${now.getFullYear()}</h4>
-                            <h4>Процент: ${summ - document.getElementById("limit").value}</h4>
-                            <h4>Сумма выплат: ${summ}</h4>
-                            `
-                        }
-                        sendOffer = document.getElementById("sendOffer")
-                        sendOffer.onclick = function(){
-                            console.log(monthInput.value)
-                            postOffer(limitInput.value, curentCredit.id, currentClient, now, months, summ - document.getElementById("limit").value)
-                        }
-                    }
-                });
-                }
-            });
-        let OfferButtons = document.querySelectorAll(".offers_button")
-        OfferButtons.forEach(OfferButton => {
-            OfferButton.onclick = async function(){
-                joffer = await getOffersByClient(OfferButton.value)
-                main.innerHTML =
-                `
-                <button type="button" class="bank-form__button" id = "to_main">Назад</button>
-                `
-                for(let key in joffer){
-                    main.innerHTML +=
-                    `
-                    <div>
-                        <h4>Оффер ${+key+1}</h4>
-                        <h5>Сумма кредита: ${joffer[key].value}</h5>
-                        <h5>Общая сумма платежей: ${joffer[key].graph.value}</h5>
-                        <h5>Ежемесячный платеж: ${Math.round(joffer[key].graph.value/joffer[key].graph.months)}</h5>
-                        <h5>Кредитный период: ${joffer[key].graph.months} месяцев</h5>
-                    </div>
-                    `
-                    main.innerHTML +=
-                    `
-                    <h4>Даты платежей:</h4>
-                    `
-                    let  now = new Date(joffer[key].graph.date)
-                    for(let months = joffer[key].graph.months; months>0; months--){
-                        console.log(months)
+                    for(key in jcredit){
                         main.innerHTML +=
                         `
-                        <h5>${now.getDate()}.${now.getMonth()+1-parseFloat(months)}.${now.getFullYear()}</h5>
+                        <div>
+                            <h4> Лимит по кредиту: ${jcredit[key].limit}</h4>
+                            <h4> Процент: ${jcredit[key].percent}%</h4>
+                        </div>
+                        <button type="button" class="offer_button" value = "${key}">Создать Оффер</button>
                         `
                     }
+                    toMainUI()
+                    let offerButtons = document.querySelectorAll(".offer_button")
+                    offerButtons.forEach(offerButton => {
+                        offerButton.onclick = function(){
+                            let curentCredit = jcredit[offerButton.value]
+                            main.innerHTML =
+                            `
+                            <button type="button" class="bank-form__button" id = "to_main">Назад</button>
+                            <form class="bank-form">
+                                <div class="bank-form__title">Кредитное предложение</div>
+                                <input class="bank-form__input" type="number" placeholder="Сумма Оффера" id="limit" max="${curentCredit.limit}">
+                                <input id="months" type="number" min="6" max="24" placeholder="Число месяцев">
+                                <div id="offer_data">
+                                <h4>Сумма оффера: -</h4>
+                                <h4>Дата закрытия: -</h4>
+                                <h4>Процент: ${curentCredit.percent}%</h4>
+                                <h4>Сумма выплат: -</h4>
+                                </div>
+                                <button type="submit" class="bank-form__button" id="sendOffer">Отправить</button>
+                            </form>
+                            `
+                            toMainUI()
+                            let limitInput = document.getElementById("limit")
+                            let monthInput = document.getElementById("months")
+                            let offerData = document.getElementById("offer_data")
+                            let now, months, summ
+                            limitInput.oninput = function(){
+                                now = new Date()
+                                months = monthInput.value
+                                if(months > 24){
+                                    monthInput.value = 24
+                                    months = monthInput.value
+                                }
+                                if(months < 6){
+                                    monthInput.value = 6
+                                    months = monthInput.value
+                                }
+                                if(limitInput.value > curentCredit.limit){
+                                    limitInput.value = curentCredit.limit
+                                }
+                                if(months){
+                                    now.setMonth(now.getMonth() + parseFloat(months))
+                                }else{
+                                    now.setMonth(now.getMonth() + parseFloat(6))
+                                }
+                                let exp = -months
+                                summ = Math.round(months*(document.getElementById("limit").value*((curentCredit.percent/(100*12))/(1-Math.pow((1+(curentCredit.percent/(100*12))),exp)))))
+                                console.log(months)
+                                offerData.innerHTML = 
+                                `
+                                <h4>Сумма оффера: ${document.getElementById("limit").value}</h4>
+                                <h4>Дата закрытия: ${now.getDate()}.${now.getMonth()+1}.${now.getFullYear()}</h4>
+                                <h4>Процент: ${summ - document.getElementById("limit").value}</h4>
+                                <h4>Сумма выплат: ${summ}</h4>
+                                `
+                            }
+                            monthInput.oninput = function(){
+                                now = new Date()
+                                months = monthInput.value
+                                if(months > 24){
+                                    monthInput.value = 24
+                                    months = monthInput.value
+                                }
+                                if(months < 6){
+                                    monthInput.value = 6
+                                    months = monthInput.value
+                                }
+                                if(limitInput.value > curentCredit.limit){
+                                    limitInput.value = curentCredit.limit
+                                }
+                                if(months){
+                                    now.setMonth(now.getMonth() + parseFloat(months))
+                                }else{
+                                    now.setMonth(now.getMonth() + parseFloat(6))
+                                }
+                                let exp = -months
+                                summ = Math.round(months*(document.getElementById("limit").value*((curentCredit.percent/(100*12))/(1-Math.pow((1+(curentCredit.percent/(100*12))),exp)))))
+                                console.log(months)
+                                offerData.innerHTML = 
+                                `
+                                <h4>Сумма оффера: ${document.getElementById("limit").value}</h4>
+                                <h4>Дата закрытия: ${now.getDate()}.${now.getMonth()+1}.${now.getFullYear()}</h4>
+                                <h4>Процент: ${summ - document.getElementById("limit").value}</h4>
+                                <h4>Сумма выплат: ${summ}</h4>
+                                `
+                            }
+                            sendOffer = document.getElementById("sendOffer")
+                            sendOffer.onclick = function(){
+                                console.log(monthInput.value)
+                                postOffer(limitInput.value, curentCredit.id, currentClient, now, months, summ - document.getElementById("limit").value)
+                            }
+                        }
+                    });
                 }
-                toMainUI()
-            }
-        });
-    }
-});
-    //Новый Клиент
+            });
+            //Список кредитных офферов клиента
+            let OfferButtons = document.querySelectorAll(".offers_button")
+            OfferButtons.forEach(OfferButton => {
+                OfferButton.onclick = async function(){
+                    joffer = await getOffersByClient(OfferButton.value)
+                    main.innerHTML =
+                    `
+                    <button type="button" class="bank-form__button" id = "to_main">Назад</button>
+                    `
+                    for(let key in joffer){
+                        main.innerHTML +=
+                        `
+                        <div>
+                            <h4>Оффер ${+key+1}</h4>
+                            <h5>Сумма кредита: ${joffer[key].value}</h5>
+                            <h5>Общая сумма платежей: ${joffer[key].graph.value}</h5>
+                            <h5>Ежемесячный платеж: ${Math.round(joffer[key].graph.value/joffer[key].graph.months)}</h5>
+                            <h5>Кредитный период: ${joffer[key].graph.months} месяцев</h5>
+                        </div>
+                        `
+                        main.innerHTML +=
+                        `
+                        <h4>Даты платежей:</h4>
+                        `
+                        let  now = new Date(joffer[key].graph.date)
+                        for(let months = joffer[key].graph.months; months>0; months--){
+                            console.log(months)
+                            main.innerHTML +=
+                            `
+                            <h5>${now.getDate()}.${now.getMonth()+1-parseFloat(months)}.${now.getFullYear()}</h5>
+                            `
+                        }
+                    }
+                    toMainUI()
+                }
+            });
+        }
+    });
+    //Новый клиент
     let newClientButtons = document.querySelectorAll(".new_client_button")
     newClientButtons.forEach(newClientsButton => {
         newClientsButton.onclick = function(){
@@ -248,7 +247,7 @@ async function init(){
         newClientUI()
         }
     });
-    //Список Кредитов
+    //Список кредитов
     let creditsButtons = document.querySelectorAll(".credits_button")
     creditsButtons.forEach(creditsButton => {
         creditsButton.onclick = async function(){
@@ -275,7 +274,7 @@ async function init(){
         deleteCredit()
         }
     });
-    //Новый Кредит
+    //Новый кредит
     let newCreditButtons = document.querySelectorAll(".new_credit_button")
     newCreditButtons.forEach(newCreditButton => {
         newCreditButton.onclick = function(){
@@ -364,23 +363,29 @@ function newBankUI(){
     }
 }
 
+//не используется, но на случай расширения функционала
+/*
 async function getAllClients() {
     let client = await fetch('http://localhost:8080/api/client',{ method: 'GET', headers: {'Access-Control-Allow-Origin':'*'}})
     let jclient = await client.json();
     return jclient
 }
+*/
 
 async function getAllBanks() {
     let bank = await fetch('http://localhost:8080/api/bank',{ method: 'GET', headers: {'Access-Control-Allow-Origin':'*'}})
     let jbank = await bank.json();
     return jbank
 }
-    
+
+//не используется, но на случай расширения функционала
+/*
 async function getAllCredits() {
     let credit = await fetch('http://localhost:8080/api/credit',{ method: 'GET', headers: {'Access-Control-Allow-Origin':'*'}})
     let jcredit = await credit.json();
     return jcredit
 }
+*/
 
 async function getClientsByBank(id) {
     currentBank = id
